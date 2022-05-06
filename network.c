@@ -26,7 +26,7 @@ void feed_forward(struct Network nn)
     {
         if (i != 0)
             calculate_activations(nn._layers[i]);
-
+        
         propogate(nn._layers[i]);
     }
 }
@@ -97,34 +97,46 @@ void free_network(struct Network* network)
 void back_propogation(struct Network nn, float* expected)
 {
     float learningRate = 1.0f;
+    float y_k, y_j, sigderiv, perr, errterm, weight_gradient;
 
-    // loop through each node of the output layer
-    for (int j = 0; j < nn._layers[nn._num_layers-1]._layer_size; j++)
+    // TODO: horrible complexity, fix
+    for (int i = nn._num_layers-1; i > 0; i--)
     {
-        // loop through each node of the previous layer
-        for (int k = 0; k < nn._layers[nn._num_layers-2]._layer_size; k++)
+        // loop through each node of the output layer
+        for (int j = 0; j < nn._layers[i]._layer_size; j++)
         {
-            // weight from node k in previous layer to node j in output layer
-            // float wkj = nn._layers[nn._num_layers-2]._layer_nodes[k]->_connection_weights[j];
+            // loop through each node of the previous layer
+            for (int k = 0; k < nn._layers[i-1]._layer_size; k++)
+            {
+                // weight from node k in previous layer to node j in output layer
 
-            // activation value of node k
-            float yk = nn._layers[nn._num_layers-2]._layer_nodes[k]->_value;
+                // activation value of node k
+                y_k = nn._layers[i-1]._layer_nodes[k]->_value;
+                y_j = nn._layers[i]._layer_nodes[j]->_value;
 
-            float sigderiv = nn._layers[nn._num_layers-1]._layer_nodes[j]->_value * 
-                    (1.0f - nn._layers[nn._num_layers-1]._layer_nodes[j]->_value);
+                sigderiv = y_j * (1.0f - y_j);
 
-            // because j is the output layer
+                // because i is the output layer
+                if (i == nn._num_layers - 1)
+                    perr = -1.0f * (expected[j] - y_j);
+                else
+                {
+                    perr = 0.0f;
+                    for (int l = 0; l < nn._layers[i + 1]._layer_size; l++)
+                    {
+                        perr += nn._layers[i + 1]._layer_nodes[l]->_errterm * nn._layers[i]._layer_nodes[j]->_connection_weights[l];
+                    }
+                    perr *= -1.0f;
+                }
+                    
+                errterm = -1.0f * sigderiv * perr;
 
-            float perr = -1.0f * (expected[j] - nn._layers[nn._num_layers-1]._layer_nodes[j]->_value);
+                nn._layers[i]._layer_nodes[j]->_errterm = errterm;
 
-            float errterm = -1.0f * sigderiv * perr;
+                weight_gradient = errterm * learningRate * y_k;
 
-            float weight_gradient = errterm * learningRate * yk;
-
-            // printf("weight for node %d to node %d: %0.2f\n", k, j, nn._layers[nn._num_layers-2]._layer_nodes[k]->_connection_weights[j]);
-            // printf("weight gradient for node %d to node %d: %0.2f\n", k, j, weight_gradient);
-
-            nn._layers[nn._num_layers-2]._layer_nodes[k]->_connection_weights[j] += weight_gradient;
+                nn._layers[i-1]._layer_nodes[k]->_connection_weights[j] += weight_gradient;
+            }
         }
     }
 }

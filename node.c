@@ -4,7 +4,10 @@ node_t* create_node()
 {
     node_t* newNode = (node_t*)malloc(sizeof(node_t));
 
-    *newNode = (node_t){._connection_weights = NULL, ._connections = NULL, ._value = 0.0f, ._num_connections = 0, ._bias = 0.0f, ._activated = false};
+    *newNode = (node_t){._connection_weights = NULL, 
+        ._connections = NULL, ._value = 0.0f, 
+        ._num_connections = 0, ._bias = 0.0f,
+        ._activated = false, ._errterm = 0.0f};
 
     return newNode;
 }
@@ -33,6 +36,7 @@ void activate(node_t* node)
 {
     if (node->_num_connections == 0)
         return;
+    
 
     for (int i = 0; i < node->_num_connections; i++)
     {

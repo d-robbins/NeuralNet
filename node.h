@@ -12,6 +12,7 @@ typedef struct Node
     float _value;
     float _bias;
     bool _activated;
+    float _errterm;
     
     float *_connection_weights;
     struct Node **_connections;
