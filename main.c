@@ -7,17 +7,21 @@
 
 #include "network.h"
 
-#define NETWORK_SIZE        3
+#define NETWORK_SIZE        5
 
 #define INPUT_LAYER_SIZE    2
 #define OUTPUT_LAYER_SIZE   2
 
-#define TOPOLOGY         {INPUT_LAYER_SIZE, 12, OUTPUT_LAYER_SIZE}
+#define TOPOLOGY         {INPUT_LAYER_SIZE, 3, 6, 3, OUTPUT_LAYER_SIZE}
 
 int main(int argc, char ** argv)
 {
     if (argc >= 2)
+    {
         omp_set_num_threads(atoi(argv[1]));
+    }
+
+    printf("Number of threads: %d\n", omp_get_num_threads());
 
     time_t t;
     srand((unsigned)time(&t));
@@ -29,11 +33,12 @@ int main(int argc, char ** argv)
     float input[INPUT_LAYER_SIZE];
     float expected[OUTPUT_LAYER_SIZE];
 
-    int ITERATIONS = 1000;
+    int ITERATIONS = 1000000;
 
     nn = create_network(topology, NETWORK_SIZE);
-
+    
     // train the network
+    double start_time = omp_get_wtime();
     for (int i = 0; i < ITERATIONS; i++)
     {    
         input[0] = ((i + (rand() % 321)) % 2 == 0) ? 1.0f : 0.0f;
@@ -43,11 +48,14 @@ int main(int argc, char ** argv)
         expected[1] = (input[1] == 1.0f) ? 0.0f : 1.0f;
         
         feed_input_data(nn, input);
-
+        
         feed_forward(nn);
 
         back_propogation(nn, expected);
     }
+    double end_time = omp_get_wtime();
+
+    printf("training time: %.3f\n", end_time - start_time);
 
     // without threshhold (learning rate 0.5): 357 avg 
     // with threshhold (learning rate 0.5): 357 avg
@@ -57,8 +65,7 @@ int main(int argc, char ** argv)
     // with threshhold (learning rate 0.9): 243 avg
     // with threshhold (learning rate 1.0): 228 avg
 
-    print_connections(nn._layers[0]);
-    print_connections(nn._layers[1]);
+    print_activations(nn);
 
     while(1)
     {
@@ -74,7 +81,7 @@ int main(int argc, char ** argv)
 
         feed_forward(nn);
 
-        printf("guess: (%.06f, %.06f)\n",  nn._layers[nn._num_layers-1]._layer_nodes[0]->_value, nn._layers[nn._num_layers-1]._layer_nodes[1]->_value);
+        printf("guess: (%.06f, %.06f)\n",  nn._avals[nn._num_layers-1][0]._activation, nn._avals[nn._num_layers-1][1]._activation);
     }
     
     free_network(&nn);

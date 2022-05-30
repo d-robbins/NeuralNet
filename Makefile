@@ -1,7 +1,9 @@
-SRC := main.c network.c node.c layer.c
+SRC := main.c network.c
+CC := gcc-11
+OPTIONS := -g -Wall -fopenmp
 
 all:
-	gcc-11 -g -Wall -fopenmp $(SRC) -o nn
+	$(CC) $(OPTIONS) $(SRC) -o nn
 	
 clean:
 	rm $(EXC_NAME)

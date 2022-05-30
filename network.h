@@ -1,12 +1,30 @@
 #ifndef __NETWORK_H_
 #define __NETWORK_H_
 
-#include "layer.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+struct WeightMatrix
+{
+    int _r;
+    int _c;
+    float **_weights;
+};
+
+struct Node
+{
+    float _activation;
+    float _errterm;
+};
 
 struct Network
 {
-    layer_t* _layers;
     int _num_layers;
+
+    struct Node ** _avals;
+    struct WeightMatrix* _wmatrix;
+    int * _top;
 };
 
 struct Network create_network(int*, int);
@@ -14,11 +32,12 @@ struct Network create_network(int*, int);
 void feed_forward(struct Network);
 void back_propogation(struct Network, float*);
 
-void print_network_layer_activations(struct Network);
+void initialize_weight_matrix(struct WeightMatrix*);
+
+void print_weight_matrices(struct Network);
+void print_activations(struct Network);
 
 void feed_input_data(struct Network, float*);
-float* calculate_error(struct Network, float*);
-float* calculate_cost_per_node(struct Network, float*);
 
 void free_network(struct Network*);
 
