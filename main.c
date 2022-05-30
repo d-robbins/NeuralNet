@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
     int ITERATIONS = 1000000;
 
     nn = create_network(topology, NETWORK_SIZE);
-    
+
     // train the network
     double start_time = omp_get_wtime();
     for (int i = 0; i < ITERATIONS; i++)

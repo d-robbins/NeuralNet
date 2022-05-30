@@ -125,12 +125,24 @@ void feed_input_data(struct Network nn, float* data)
 
 void free_network(struct Network* network)
 {
-    // for (int i = 0; i < network->_num_layers; i++)
-    // {
-    //     free_layer(network->_layers[i]);
-    // }
+    for (int i = 0; i < network->_num_layers; i++)
+    {
+        free(network->_avals[i]);
+    }
 
-    // free(network->_layers);
+    free(network->_avals);
+
+    for (int i = 0; i < network->_num_layers - 1; i++)
+    {
+        for (int j = 0; j < network->_wmatrix[i]._r; j++)
+        {
+            free(network->_wmatrix[i]._weights[j]);
+        }
+
+        free(network->_wmatrix[i]._weights);
+    }
+
+    free(network->_wmatrix);
 }
 
 void back_propogation(struct Network nn, float* expected)
