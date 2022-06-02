@@ -1,6 +1,11 @@
 #include "network.h"
 #include <omp.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 struct Network create_network(int* topology, int nlayers)
 {
     struct Network nn;
@@ -28,7 +33,7 @@ struct Network create_network(int* topology, int nlayers)
             if ((rand() % 100) % 2 == 0)
                 value *= -1.0f;
             nn._avals[i][j]._activation = value;
-            nn._avals[i][j]._errterm = 0.0f;
+            nn._avals[i][j]._errterm = 1.0f;
         }
     }
 
@@ -37,12 +42,12 @@ struct Network create_network(int* topology, int nlayers)
 
 void print_activations(struct Network nn)
 {
-    printf("Activation Values\n----------------------------\n");
     for (int i = 0; i < nn._num_layers; i++)
     {
+        printf("\n-------------Layer %d---------------\n", i);
         for (int j = 0; j < nn._top[i]; j++)
         {
-            printf("%.2f ", nn._avals[i][j]._activation);
+            printf("%d: %.2f\tError Term: %.2f\n", j, nn._avals[i][j]._activation, nn._avals[i][j]._errterm);
         }
         printf("\n---------------------------\n");
     }
@@ -145,7 +150,7 @@ void free_network(struct Network* network)
     free(network->_wmatrix);
 }
 
-void back_propogation(struct Network nn, float* expected)
+void back_propagation(struct Network nn, float* expected)
 {
     float learningRate = 1.0f;
     float y_k, y_j, sigderiv, perr, errterm, weight_gradient;
@@ -191,4 +196,36 @@ void back_propogation(struct Network nn, float* expected)
             }
         }
     }
+}
+
+void write_weight_images(struct Network nn)
+{
+    // monochrome
+    for (int i = 0; i < nn._num_layers - 1; i++)
+    {
+        write_weight_image(nn, i);
+    }
+}
+
+void write_weight_image(struct Network nn, int i)
+{
+    static int written = 0;
+    unsigned char * img = (unsigned char*)malloc(sizeof(unsigned char) * nn._wmatrix[i]._c * nn._wmatrix[i]._r);
+
+    for (int r = 0; r < nn._wmatrix[i]._r; r++)
+    {
+        for (int c = 0; c < nn._wmatrix[i]._c; c++)
+        {
+            img[r * nn._wmatrix[i]._c + c] = (int)(nn._wmatrix[i]._weights[r][c] * 255.0f);
+        }
+    }
+
+    char file[20];
+    sprintf(file, "imgs/data%d.png", written);
+
+    int err = stbi_write_png(file, nn._wmatrix[i]._c, nn._wmatrix[i]._r, 1, img, 0);
+
+    free(img);
+
+    written++;
 }

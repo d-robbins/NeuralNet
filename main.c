@@ -12,16 +12,21 @@
 #define INPUT_LAYER_SIZE    2
 #define OUTPUT_LAYER_SIZE   2
 
-#define TOPOLOGY         {INPUT_LAYER_SIZE, 3, 6, 3, OUTPUT_LAYER_SIZE}
+#define TOPOLOGY         {INPUT_LAYER_SIZE, 3, 2, 3, OUTPUT_LAYER_SIZE}
 
 int main(int argc, char ** argv)
 {
+    int ITERATIONS = 1000;
+
     if (argc >= 2)
     {
-        omp_set_num_threads(atoi(argv[1]));
+        ITERATIONS = atoi(argv[1]);
     }
 
-    printf("Number of threads: %d\n", omp_get_num_threads());
+    if (argc >= 3)
+    {
+        omp_set_num_threads(atoi(argv[2]));
+    }
 
     time_t t;
     srand((unsigned)time(&t));
@@ -32,8 +37,6 @@ int main(int argc, char ** argv)
 
     float input[INPUT_LAYER_SIZE];
     float expected[OUTPUT_LAYER_SIZE];
-
-    int ITERATIONS = 1000000;
 
     nn = create_network(topology, NETWORK_SIZE);
 
@@ -51,7 +54,7 @@ int main(int argc, char ** argv)
         
         feed_forward(nn);
 
-        back_propogation(nn, expected);
+        back_propagation(nn, expected);
     }
     double end_time = omp_get_wtime();
 

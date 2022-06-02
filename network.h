@@ -30,7 +30,7 @@ struct Network
 struct Network create_network(int*, int);
 
 void feed_forward(struct Network);
-void back_propogation(struct Network, float*);
+void back_propagation(struct Network, float*);
 
 void initialize_weight_matrix(struct WeightMatrix*);
 
@@ -40,5 +40,8 @@ void print_activations(struct Network);
 void feed_input_data(struct Network, float*);
 
 void free_network(struct Network*);
+
+void write_weight_images(struct Network);
+void write_weight_image(struct Network, int);
 
 #endif // __NETWORK_H_
